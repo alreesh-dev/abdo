@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot">
+
+    <!-- 1. استدعاء الخصائص المشتركة والألوان -->
+    <xacro:include filename="common_properties.xacro"/>
+
+    <!-- 2. استدعاء هيكل الروبوت (تأكد أن base_link هو الأب الرئيسي هنا) -->
+    <xacro:include filename="mobile_base.xacro"/>
+
+    <!-- 3. استدعاء الحساسات (Lidar) -->
+    <xacro:include filename="lidar.xacro"/>
+
+    <!-- 4. استدعاء متحكمات الغازيبو -->
+    <xacro:include filename="gazebo_control.xacro"/>
+
+    <!-- إعدادات Ignition Gazebo لضمان استقرار شجرة الـ TF -->
+    <gazebo>
+        <!-- هذا البلجن يضمن أن غازيبو يرسل وضعية الروبوت الحقيقية إلى ROS -->
+        <plugin filename="ignition-gazebo-pose-publisher-system" name="ignition::gazebo::systems::PosePublisher">
+            <publish_link_pose>true</publish_link_pose>
+            <publish_collision_pose>false</publish_collision_pose>
+            <publish_visual_pose>false</publish_visual_pose>
+            <publish_nested_model_pose>true</publish_nested_model_pose>
+            <use_pose_vector_msg>true</use_pose_vector_msg>
+            <static_publisher>true</static_publisher>
+            <static_update_frequency>100</static_update_frequency>
+        </plugin>
+    </gazebo>
+
+</robot>

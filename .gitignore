@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 build/
 install/
 log/
 .vscode/
+=======
+my_factory/src/.vscode/
+*.db
+my_factory/src/.vscode/
+*.db
+>>>>>>> 0e24ab571e0608b60e2b85d463ed671f64b65870
