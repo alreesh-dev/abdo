@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>my_factory</name>
   <version>0.0.0</version>
@@ -7,6 +8,7 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
   <depend>slam_toolbox</depend>
@@ -16,6 +18,19 @@
   <depend>nav2_bringup</depend>
   <depend>navigation2</depend>
   <depend>nav2_simple_commander</depend>
+  <depend>robot_localization</depend>
+
+  <!-- Panda + MoveIt manipulator bringup (panda_moveit.launch.py) -->
+  <depend>moveit_ros_move_group</depend>
+  <depend>moveit_configs_utils</depend>
+  <depend>moveit_resources_panda_moveit_config</depend>
+  <depend>moveit_resources_panda_description</depend>
+  <depend>ros_gz_sim</depend>
+  <depend>controller_manager</depend>
+  <depend>joint_trajectory_controller</depend>
+  <depend>joint_state_broadcaster</depend>
+  <depend>position_controllers</depend>
+  <exec_depend>ign_ros2_control</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

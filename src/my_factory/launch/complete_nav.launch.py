@@ -5,7 +5,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('my_factory')
-    
+
     rviz_config_path = os.path.join(pkg_share, 'rviz', 'nav2_default_view.rviz')
 
     return LaunchDescription([

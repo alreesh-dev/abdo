@@ -7,7 +7,6 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     pkg_path = get_package_share_directory('my_factory')
-
     # 1. استدعاء ملف Gazebo الأساسي
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'gazebo.launch.py'))
@@ -79,6 +78,7 @@ def generate_launch_description():
         output='screen'
     )
 
+
     return LaunchDescription([
         gazebo_launch,
         ros_gz_bridge,
@@ -86,4 +86,5 @@ def generate_launch_description():
         TimerAction(period=3.0, actions=[laser_merger_node]),
         TimerAction(period=6.0, actions=[slam_launch]),
         rviz_node
+
     ])

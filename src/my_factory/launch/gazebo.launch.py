@@ -9,10 +9,8 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     pkg_path = get_package_share_directory('my_factory')
 
-    # استخدام الـ Sim Time ضروري جداً لتزامن المحاكي مع ROS
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
-    # 1. مسار ملف العالم (World)
     world_file = os.path.join(pkg_path, 'worlds', 'fac.world')
 
     # 2. تشغيل محرك المحاكاة Gazebo Ignition

@@ -6,12 +6,10 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node # أضفنا هذا السطر للاحتياط
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory('my_factory')
     nav2_bringup_share = get_package_share_directory('nav2_bringup')
 
-    # مسار الخريطة والبارامترات
-    map_yaml_file = os.path.join(pkg_share, 'maps', 'warehouse_to_edit.yaml')
-    params_file = os.path.join(pkg_share, 'config', 'nav2_params.yaml')
+    map_yaml_file = os.path.join(get_package_share_directory('my_factory'), 'maps', 'warehouse_to_edit.yaml')
+    params_file = os.path.join(get_package_share_directory('my_factory'), 'config', 'nav2_params.yaml')
 
     return LaunchDescription([
         IncludeLaunchDescription(

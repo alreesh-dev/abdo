@@ -1,4 +1,4 @@
-image: /home/abdulrahman/abdo/src/my_factory/maps/warehouse_to_edit.pgm
+image: warehouse_to_edit.pgm
 mode: trinary
 resolution: 0.05
 origin: [-15.2, -15.3, 0]

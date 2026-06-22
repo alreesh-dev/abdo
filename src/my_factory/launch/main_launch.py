@@ -46,8 +46,8 @@ def generate_launch_description():
             # بيانات الـ Odometry
             '/model/warehouse_robot/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
             
-            # التحويلات الهندسية (TF) - ضروري جداً لربط odom بـ base_footprint
-            '/model/warehouse_robot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
+            # بيانات الـ IMU (تُدمج مع عداد العجلات في الـ EKF)
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
             
             # حالة المفاصل (لتحريك العجلات في RViz)
             '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
@@ -58,10 +58,18 @@ def generate_launch_description():
         ],
         remappings=[
             ('/model/warehouse_robot/odometry', '/odom'),
-            ('/model/warehouse_robot/tf', '/tf'), 
             ('/front_right_scan', '/scan') # الحساس الأساسي للـ SLAM
         ],
         output='screen'
+    )
+
+    # 2.5 مرشح EKF لدمج عداد العجلات مع الـ IMU (ينشر تحويل odom -> base_footprint)
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[os.path.join(pkg_path, 'config', 'ekf.yaml'), {'use_sim_time': use_sim_time}]
     )
 
     # 3. الـ SLAM Toolbox - لبناء الخريطة (map)
@@ -86,6 +94,7 @@ def generate_launch_description():
         declare_use_sim_time,
         gazebo_sim,
         bridge,
+        ekf_node,
         rviz,
         # تأخير الـ SLAM قليلاً لضمان استقرار شجرة الـ TF أولاً
         TimerAction(period=7.0, actions=[slam_toolbox])

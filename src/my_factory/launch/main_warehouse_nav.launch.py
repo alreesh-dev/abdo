@@ -8,10 +8,9 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pkg_path = get_package_share_directory('my_factory')
     rviz_config_path = os.path.join(get_package_share_directory('my_factory'), 'rviz', 'nav2_default_view.rviz')
-    
-    # تحديد المسارات الصحيحة للملفات داخل حزمة share
+
     params_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
-    custom_bt_xml = os.path.expanduser('~/abdo/src/my_factory/behavior_trees/simple_nav.xml')
+    custom_bt_xml = os.path.join(pkg_path, 'behavior_trees', 'simple_nav.xml')
 
     # 1. تشغيل بيئة المحاكاة جازيبو
     gazebo = IncludeLaunchDescription(
@@ -26,38 +25,26 @@ def generate_launch_description():
             '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
             '/cmd_vel@geometry_msgs/msg/Twist]ignition.msgs.Twist',
             '/model/warehouse_robot/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
-            '/model/warehouse_robot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
             '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
             '/front_right_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
             '/back_left_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
         ],
         remappings=[
             ('/model/warehouse_robot/odometry', '/odom'),
-            ('/model/warehouse_robot/tf', '/tf')
+            ('/front_right_scan', '/scan')
         ],
         parameters=[{'use_sim_time': True}],
         output='screen'
     )
 
-    # 3. دمج بيانات الليزر مع ضبط نطاق الرؤية والأبعاد بدقة لنسخة Humble لمنع طيران الإشارات
-    laser_merger = Node(
-        package='ira_laser_tools',
-        executable='laserscan_multi_merger',
-        name='laserscan_multi_merger',
+    # 3. مرشح EKF لدمج عداد العجلات مع الـ IMU (ينشر تحويل odom -> base_footprint)
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
         output='screen',
-        parameters=[{
-            'use_sim_time': True,
-            'destination_frame': 'base_footprint', 
-            'scan_destination_topic': '/scan',
-            'laserscan_topics': '/front_right_scan /back_left_scan',
-            # البارامترات الحيوية لضبط زوايا وأبعاد أشعة الليزر المدمجة:
-            'angle_min': -3.14159,
-            'angle_max': 3.14159,
-            'angle_increment': 0.01745,
-            'scan_time': 0.1,
-            'range_min': 0.3,
-            'range_max': 12.0,
-        }]
+        parameters=[os.path.join(pkg_path, 'config', 'ekf.yaml'), {'use_sim_time': True}]
     )
 
     # 4. عقد نظام الملاحة (Nav2 Nodes)
@@ -71,7 +58,7 @@ def generate_launch_description():
                 params_file, 
                 {
                     'use_sim_time': True, 
-                    'yaml_filename': os.path.expanduser('~/abdo/src/my_factory/maps/warehouse_to_edit.yaml')
+                    'yaml_filename': os.path.join(pkg_path, 'maps', 'warehouse_to_edit.yaml')
                 }
             ]
         ),
@@ -162,7 +149,7 @@ def generate_launch_description():
     return LaunchDescription([
         gazebo,
         bridge,
-        laser_merger,
+        ekf_node,
         *nav_nodes,
         lifecycle_manager,
         TimerAction(period=12.0, actions=[rviz])

@@ -7,14 +7,9 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    # 1. تحديد المسارات الأساسية
     pkg_path = get_package_share_directory('my_factory')
     default_rviz_config_path = os.path.join(pkg_path, 'rviz', 'urdf_config.rviz')
-
-    # 2. تعريف ملف الـ URDF الأساسي (استخدام xacro لمعالجته)
     xacro_file = os.path.join(pkg_path, 'urdf', 'my_robot.urdf.xacro')
-    
-    # 3. عقدة Robot State Publisher
     # تقوم بتحويل الـ URDF إلى تحويلات TF وتشرها للـ ROS
     robot_state_publisher_node = Node(
         package='robot_state_publisher',

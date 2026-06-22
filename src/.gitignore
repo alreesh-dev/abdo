@@ -1,4 +1,20 @@
-my_factory/src/.vscode/
-*.db
-my_factory/src/.vscode/
-*.db
+# Per-developer environment (copy from abdo.env.example)
+my_factory/config/abdo.env
+
+# Editor / IDE (machine-specific include paths)
+.vscode/
+**/.vscode/
+
+# Colcon / ROS build artifacts (if workspace root is above src/)
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+*~
