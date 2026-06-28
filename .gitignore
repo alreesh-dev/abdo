@@ -1,4 +1,18 @@
-<<<<<<< HEAD
+# ROS 2 Build/Install folders
+build/
+install/
+log/
+
+# VS Code settings
+.vscode/
+
+# Python & Cache
+__pycache__/
+*.pyc
+
+# Data & System
+.data/
+.posegraph<<<<<<< HEAD
 build/
 install/
 log/
