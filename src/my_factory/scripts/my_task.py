@@ -22,14 +22,15 @@ class IndustrialMissionManager(Node):
         
         self.get_logger().info("نظام التحويلات مستقر. جاهز للمهمة.")
 
-    def create_pose(self, x, y):
-        """إنشاء نقطة هدف احترافية"""
+    def create_pose(self, x, y, yaw_z=0.0, yaw_w=1.0):
+        """إنشاء نقطة هدف احترافية مع التحكم باتجاه الروبوت"""
         pose = PoseStamped()
         pose.header.frame_id = 'map'
         pose.header.stamp = self.nav.get_clock().now().to_msg()
         pose.pose.position.x = float(x)
         pose.pose.position.y = float(y)
-        pose.pose.orientation.w = 1.0 # التوجه للأمام
+        pose.pose.orientation.z = float(yaw_z)  # تحديد زاوية الدوران Z
+        pose.pose.orientation.w = float(yaw_w)  # تحديد زاوية الدوران W
         return pose
 
     def execute_mission(self, waypoints):
@@ -50,7 +51,7 @@ class IndustrialMissionManager(Node):
             if result == TaskResult.SUCCEEDED:
                 self.get_logger().info(f"تم الوصول للهدف رقم {i+1} بنجاح.")
                 
-                # هنا لحظة الانتظار (سيقف الروبوت كتمثال تماماً)
+                # جاري الانتظار في الموقع
                 self.get_logger().info("جاري الانتظار في الموقع (5 ثوانٍ)...")
                 time.sleep(5) 
                 
@@ -62,10 +63,13 @@ def main():
     rclpy.init()
     manager = IndustrialMissionManager()
     
-    # تعريف قائمة المهام
+    # 🟢 تعريف قائمة المهام بالإحداثيات الجديدة 🟢
     mission_goals = [
-        manager.create_pose(-8.018, 6.449),
-        manager.create_pose(8.299, -11.171)
+        # الهدف الأول 
+        manager.create_pose(-15.2, 2.88, yaw_z=0.0, yaw_w=1.0),
+        
+        # الهدف الثاني 
+        manager.create_pose(2.14, -17.9, yaw_z=0.0, yaw_w=1.0)
     ]
     
     try:

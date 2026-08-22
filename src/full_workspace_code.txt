@@ -1,0 +1,1363 @@
+=== FILE: ./ira_laser_tools/package.xml ===
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ira_laser_tools</name>
+  <version>1.0.0</version>
+  <description>Laser merging tools for ROS 2</description>
+  <maintainer email="abdulrahman@todo.todo">abdulrahman</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>pcl_ros</depend>
+  <depend>pcl_conversions</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
+
+=== FILE: ./my_factory/config/panda_controllers.yaml ===
+# ros2_control controllers, loaded by the ign_ros2_control system plugin
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+    use_sim_time: true
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    panda_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    panda_hand_controller:
+      type: position_controllers/GripperActionController
+
+# Publish only the real model joints. ign_ros2_control exposes the mimic joint's
+# state interface as "panda_finger_joint2_mimic", which MoveIt rejects ("Joint
+# 'panda_finger_joint2_mimic' not found in model"). robot_state_publisher / MoveIt
+# recompute panda_finger_joint2 from the URDF <mimic> tag, so we simply don't
+# broadcast the suffixed artifact.
+joint_state_broadcaster:
+  ros__parameters:
+    joints:
+      - panda_joint1
+      - panda_joint2
+      - panda_joint3
+      - panda_joint4
+      - panda_joint5
+      - panda_joint6
+      - panda_joint7
+      - panda_finger_joint1
+    interfaces:
+      - position
+      - velocity
+
+panda_arm_controller:
+  ros__parameters:
+    joints:
+      - panda_joint1
+      - panda_joint2
+      - panda_joint3
+      - panda_joint4
+      - panda_joint5
+      - panda_joint6
+      - panda_joint7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    allow_nonzero_velocity_at_trajectory_end: true
+
+panda_hand_controller:
+  ros__parameters:
+    joint: panda_finger_joint1
+    allow_stalling: true
+
+
+=== FILE: ./my_factory/config/nav2_params.yaml ===
+map_server:
+  ros__parameters:
+    use_sim_time: True
+    # Overridden at launch from package share (see main_warehouse_nav.launch.py)
+    yaml_filename: ""
+    topic_with_timeout_msg: True
+    qos_overrides:
+      /map:
+        publisher:
+          reliability: reliable
+          durability: transient_local
+          
+amcl:
+  ros__parameters:
+    use_sim_time: True
+    tf_broadcast: True
+    transform_tolerance: 0.3
+    alpha1: 0.8
+    alpha2: 0.4
+    alpha3: 0.2
+    alpha4: 0.4
+    base_frame_id: "base_footprint"
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    scan_topic: /scan
+    map_topic: /map
+    set_initial_pose: True
+    initial_pose: [0.0, 0.0, 0.0, 0.0]
+    update_min_d: 0.1
+    update_min_a: 0.1
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    max_beams: 60
+    min_particles: 500
+    max_particles: 2000
+    lambda_short: 0.1
+    sigma_hit: 0.2
+    z_hit: 0.5
+    z_max: 0.05
+    z_rand: 0.5
+    z_short: 0.05
+    bond_heartbeat_timeout: 4.0
+    qos_overrides:
+      /scan:
+        subscription:
+          reliability: best_effort
+          durability: volatile
+      /map:
+        subscription:
+          reliability: reliable
+          durability: transient_local
+
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_footprint
+    odom_frame: odom
+    # Overridden at launch from package share (see main_warehouse_nav.launch.py)
+    default_bt_xml_filename: ""
+    plugin_lib_names:
+    - nav2_compute_path_to_pose_action_bt_node
+    - nav2_follow_path_action_bt_node
+    - nav2_back_up_action_bt_node
+    - nav2_spin_action_bt_node
+    - nav2_wait_action_bt_node
+    - nav2_clear_costmap_service_bt_node
+    - nav2_is_stuck_condition_bt_node
+    - nav2_goal_reached_condition_bt_node
+    - nav2_goal_updated_condition_bt_node
+    - nav2_reinitialize_global_localization_service_bt_node
+    - nav2_rate_controller_bt_node
+    - nav2_distance_controller_bt_node
+    - nav2_speed_controller_bt_node
+    - nav2_truncate_path_action_bt_node
+    - nav2_pipeline_sequence_bt_node
+    - nav2_transform_available_condition_bt_node
+    - nav2_time_expired_condition_bt_node
+    - nav2_distance_traveled_condition_bt_node
+
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 10.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.0
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugin: "goal_checker"
+    controller_plugins: ["FollowPath"]
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.1
+      movement_time_allowance: 30.0
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.50
+      yaw_goal_tolerance: 3.14
+      stateful: True
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: True
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 0.5
+      max_vel_y: 0.0
+      max_vel_theta: 1.5
+      min_speed_xy: 0.0
+      max_speed_xy: 0.5
+      min_speed_theta: 0.0
+      acc_lim_x: 2.5
+      acc_lim_y: 0.0
+      acc_lim_theta: 2.2
+      decel_lim_x: -2.5
+      decel_lim_y: 0.0
+      decel_lim_theta: -2.2
+      vx_samples: 20
+      vy_samples: 5
+      vtheta_samples: 20
+      sim_time: 3.0
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 0.5
+      xy_goal_tolerance: 0.45
+      trans_stopped_velocity: 0.05
+      short_circuit_trajectory_evaluation: True
+      stateful: True
+      critics: ["Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 0.1
+      PathDefault.scale: 32.0
+      PathDefault.bias: 32.0
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.1
+      PathDist.scale: 32.0
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.1
+      GoalDist.scale: 24.0
+      #RotateToGoal.scale: 32.0
+      #RotateToGoal.slowing_factor: 5.0
+      #RotateToGoal.lookahead_time: -1.0
+      expected_controller_frequency: 10.0
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_footprint
+      use_sim_time: True
+      rolling_window: true
+      width: 7
+      height: 7
+      resolution: 0.05
+      footprint: "[[1.0, 1.0], [1.0, -1.0], [-1.0, -1.0], [-1.0, 1.0]]"
+      transform_tolerance: 0.3
+      plugins: ["static_layer", "voxel_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 2.0
+        inflation_radius: 1.2
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          reliability: "best_effort"
+          durability: "volatile"
+          data_type: "LaserScan"
+          raytrace_max_range: 3.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+      always_send_full_costmap: True
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_footprint
+      use_sim_time: True
+      footprint: "[[1.0, 1.0], [1.0, -1.0], [-1.0, -1.0], [-1.0, 1.0]]"
+      resolution: 0.05
+      track_unknown_space: true
+      transform_tolerance: 0.3
+      plugins: ["static_layer", "voxel_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        subscribe_to_updates: True
+        map_subscribe_transient_local: True
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        max_obstacle_height: 2.0
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          reliability: "best_effort"
+          durability: "volatile"
+          raytrace_max_range: 3.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 2.0
+        inflation_radius: 1.2
+      always_send_full_costmap: True
+
+planner_server:
+  ros__parameters:
+    expected_update_rate: 20.0
+    use_sim_time: True
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
+
+behavior_server:
+  ros__parameters:
+    use_sim_time: True
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    global_frame: map
+    robot_base_frame: base_footprint
+    transform_timeout: 0.1
+
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: True
+    publish_frequency: 50.0
+
+lifecycle_manager_navigation:
+  ros__parameters:
+    use_sim_time: True
+    autostart: True
+    node_names: ['map_server', 'amcl', 'planner_server', 'controller_server', 'bt_navigator', 'behavior_server']
+    attempt_respawn_reconnection: True
+
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: True
+    loop_rate: 20
+    stop_on_failure: False
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: True
+      waypoint_pause_duration: 200
+     
+
+=== FILE: ./my_factory/config/ekf.yaml ===
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 30.0
+    sensor_timeout: 0.1
+    two_d_mode: true
+    transform_time_offset: 0.0
+    transform_timeout: 0.0
+    publish_tf: true
+    publish_acceleration: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom
+
+    # Wheel odometry: trust ONLY the linear velocity (vx).
+    # The skid-steer rotation from wheel encoders is unreliable, so yaw is taken from the IMU instead.
+    odom0: /odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  false, false,
+                   false, false, false,
+                   false, false, false]
+    odom0_queue_size: 10
+    odom0_differential: false
+    odom0_relative: false
+
+    # IMU: provide absolute yaw and yaw rate (accurate through the skid).
+    imu0: /imu
+    imu0_config: [false, false, false,
+                  false, false, true,
+                  false, false, false,
+                  false, false, true,
+                  false, false, false]
+    imu0_queue_size: 10
+    imu0_differential: false
+    imu0_relative: false
+    imu0_remove_gravitational_acceleration: true
+
+
+=== FILE: ./my_factory/config/moveit_controllers.yaml ===
+# MoveIt -> ros2_control controller mapping for the Ignition Panda.
+# The stock panda moveit_controllers.yaml only registers the arm, which is why
+# the "hand" group fails to execute. This adds the gripper as a GripperCommand
+# action (matching position_controllers/GripperActionController in
+# panda_controllers.yaml, whose action server is panda_hand_controller/gripper_cmd).
+trajectory_execution:
+  allowed_execution_duration_scaling: 1.2
+  allowed_goal_duration_margin: 0.5
+  allowed_start_tolerance: 0.01
+  trajectory_duration_monitoring: true
+
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - panda_arm_controller
+    - panda_hand_controller
+
+  panda_arm_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: true
+    joints:
+      - panda_joint1
+      - panda_joint2
+      - panda_joint3
+      - panda_joint4
+      - panda_joint5
+      - panda_joint6
+      - panda_joint7
+
+  panda_hand_controller:
+    action_ns: gripper_cmd
+    type: GripperCommand
+    default: true
+    joints:
+      - panda_finger_joint1
+
+
+=== FILE: ./my_factory/config/mapper_params_online_async.yaml ===
+slam_toolbox:
+  ros__parameters:
+
+    # --- إعدادات وضع التشغيل ---
+    mode: mapping
+    map_start_pose: [0.0, 0.0, 0.0]
+    map_start_at_dock: true
+
+    # --- الإطارات المرجعية (مطابقة لنتائج view_frames) ---
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_footprint # مرتبط بـ base_link في الـ TF
+    scan_topic: /scan 
+    use_sim_time: true
+
+    # --- إعدادات التزامن ---
+    debug_logging: false
+    throttle_scans: 1
+    transform_publish_period: 0.05 
+    map_update_interval: 5.0      
+    resolution: 0.05            
+    max_laser_range: 20.0         
+    minimum_time_interval: 0.2
+    transform_timeout: 0.5        
+    tf_buffer_duration: 30.0
+
+    # --- إعدادات المطابقة (Scan Matching) - تم تعديلها لتناسب وجود الـ IMU ---
+    use_scan_matching: true
+    use_scan_barycenter: true
+    
+    # ارفعنا القيم قليلاً لضمان عدم حدوث "قفزات" في الخريطة بسبب الاهتزاز
+    minimum_travel_distance: 0.3   # لا يحدث الخريطة إلا بعد حركة 30 سم
+    minimum_travel_heading: 0.1    # لا يحدث الخريطة إلا بعد دوران 0.1 راديان (حوالي 6 درجات)
+    
+    scan_matching_stats_iteration_limit: 50 
+
+    # --- إعدادات البحث عن الربط (Scan-to-Map Matching) ---
+    link_match_maximum_distance: 0.5
+    link_scan_maximum_distance: 1.5
+    
+    # --- إغلاق الحلقات (Loop Closing) ---
+    do_loop_closing: true
+    loop_closure_search_radius: 15.0 
+    loop_closure_search_maximum_distance_hypothesis: 4.0
+    loop_closure_min_chain_size: 20
+    loop_closure_min_score: 0.5
+    
+    # --- إعدادات الذاكرة ---
+    stack_size_to_use: 40000000
+
+=== FILE: ./my_factory/scripts/my_task.py ===
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
+from geometry_msgs.msg import PoseStamped
+import time
+
+class IndustrialMissionManager(Node):
+    def __init__(self):
+        super().__init__('industrial_mission_manager')
+        # 1. تهيئة الملاح
+        self.nav = BasicNavigator()
+        self.get_logger().info("--- جاري تشغيل نظام الملاحة الصناعي (نسخة الثبات عند الوصول) ---")
+        
+        # 2. الانتظار حتى يصبح Nav2 نشطاً بالكامل 
+        self.nav.waitUntilNav2Active()
+        
+        self.get_logger().info("نظام Nav2 نشط.")
+        
+        # 3. تأخير بسيط لضمان استقرار شجرة التحويلات
+        time.sleep(2) 
+        
+        self.get_logger().info("نظام التحويلات مستقر. جاهز للمهمة.")
+
+    def create_pose(self, x, y):
+        """إنشاء نقطة هدف احترافية"""
+        pose = PoseStamped()
+        pose.header.frame_id = 'map'
+        pose.header.stamp = self.nav.get_clock().now().to_msg()
+        pose.pose.position.x = float(x)
+        pose.pose.position.y = float(y)
+        pose.pose.orientation.w = 1.0 # التوجه للأمام
+        return pose
+
+    def execute_mission(self, waypoints):
+        """تنفيذ المهمة بالانتقال بين النقاط مع انتظار صامت عند كل نقطة"""
+        
+        for i, goal in enumerate(waypoints):
+            self.get_logger().info(f"جاري التوجه للهدف رقم {i+1}: {goal.pose.position.x}, {goal.pose.position.y}")
+            
+            # إرسال الهدف
+            self.nav.goToPose(goal)
+            
+            # مراقبة الوصول
+            while not self.nav.isTaskComplete():
+                time.sleep(0.5)
+            
+            # تحليل النتيجة
+            result = self.nav.getResult()
+            if result == TaskResult.SUCCEEDED:
+                self.get_logger().info(f"تم الوصول للهدف رقم {i+1} بنجاح.")
+                
+                # هنا لحظة الانتظار (سيقف الروبوت كتمثال تماماً)
+                self.get_logger().info("جاري الانتظار في الموقع (5 ثوانٍ)...")
+                time.sleep(5) 
+                
+            else:
+                self.get_logger().error(f"فشل الوصول للهدف رقم {i+1}!")
+                break
+
+def main():
+    rclpy.init()
+    manager = IndustrialMissionManager()
+    
+    # تعريف قائمة المهام
+    mission_goals = [
+        manager.create_pose(-8.018, 6.449),
+        manager.create_pose(8.299, -11.171)
+    ]
+    
+    try:
+        manager.execute_mission(mission_goals)
+        manager.get_logger().info("تمت المهمة بنجاح.")
+    except KeyboardInterrupt:
+        manager.get_logger().info("تم إيقاف المهمة من قبل المستخدم.")
+    finally:
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+
+=== FILE: ./my_factory/package.xml ===
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>my_factory</name>
+  <version>0.0.0</version>
+  <description>Autonomous Warehouse Robot Project</description>
+  <maintainer email="abdulrahman@todo.todo">abdulrahman</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>slam_toolbox</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>joint_state_publisher</depend>
+  <depend>xacro</depend>
+  <depend>nav2_bringup</depend>
+  <depend>navigation2</depend>
+  <depend>nav2_simple_commander</depend>
+  <depend>robot_localization</depend>
+
+  <!-- Panda + MoveIt manipulator bringup (panda_moveit.launch.py) -->
+  <depend>moveit_ros_move_group</depend>
+  <depend>moveit_configs_utils</depend>
+  <depend>moveit_resources_panda_moveit_config</depend>
+  <depend>moveit_resources_panda_description</depend>
+  <depend>ros_gz_sim</depend>
+  <depend>controller_manager</depend>
+  <depend>joint_trajectory_controller</depend>
+  <depend>joint_state_broadcaster</depend>
+  <depend>position_controllers</depend>
+  <exec_depend>ign_ros2_control</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
+=== FILE: ./my_factory/src/laser_merger_node.py ===
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import LaserScan
+import numpy as np
+
+class LaserMerger(Node):
+    def __init__(self):
+        super().__init__('laser_merger_node')
+        # المواضيع التي تظهر في سجلاتك: /front_right_scan و /back_left_scan
+        self.sub_front = self.create_subscription(LaserScan, '/front_right_scan', self.front_callback, 10)
+        self.sub_back = self.create_subscription(LaserScan, '/back_left_scan', self.back_callback, 10)
+        self.publisher = self.create_publisher(LaserScan, '/scan', 10)
+        
+        self.front_data = None
+        self.back_data = None
+
+    def front_callback(self, msg):
+        self.front_data = msg
+        self.merge_and_publish()
+
+    def back_callback(self, msg):
+        self.back_data = msg
+        self.merge_and_publish()
+
+    def merge_and_publish(self):
+        if self.front_data is None or self.back_data is None:
+            return
+        
+        merged_scan = self.front_data # نأخذ خصائص الهيدر من الليزر الأمامي
+        merged_scan.header.frame_id = 'base_link'
+        
+        # دمج البيانات (ببساطة نأخذ القيمة الأصغر بين المستشعرين لكل زاوية)
+        combined_ranges = np.minimum(self.front_data.ranges, self.back_data.ranges)
+        merged_scan.ranges = combined_ranges.tolist()
+        
+        self.publisher.publish(merged_scan)
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = LaserMerger()
+    rclpy.spin(node)
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+
+=== FILE: ./my_factory/launch/bringup_all.launch.py ===
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    pkg_path = get_package_share_directory('my_factory')
+    # 1. استدعاء ملف Gazebo الأساسي
+    gazebo_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'gazebo.launch.py'))
+    )
+
+    # 2. عقدة الجسر (Bridge) - النسخة الاحترافية لربط الأودومتري والحساسات
+    ros_gz_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            # الحركة
+            '/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
+            
+            # الأودومتري - ربط المسار الكامل (ضروري جداً ليظهر الـ echo)
+            '/model/warehouse_robot/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
+            
+            # الليزر
+            '/front_right_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+            '/back_left_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+            
+            # الـ TF - ربط بيانات الوضعية الديناميكية
+            '/model/warehouse_robot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
+            
+            # الـ IMU (الحل السحري لمشكلتك - تم التأكد من الصيغة)
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
+            
+            '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
+            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'
+        ],
+        remappings=[
+            ('/model/warehouse_robot/odometry', '/odom'),
+            ('/model/warehouse_robot/tf', '/tf')
+        ],
+        output='screen'
+    )
+    # 3. دمج الليزرين (Laser Merger)
+    laser_merger_node = Node(
+        package='ira_laser_tools',
+        executable='laserscan_multi_merger',
+        name='laserscan_multi_merger',
+        parameters=[{
+            'destination_frame': 'base_link', # تأكد أنه نفس الـ frame الرئيسي للروبوت
+            'cloud_destination_topic': '/merged_cloud',
+            'scan_destination_topic': '/scan',
+            'laserscan_topics': '/front_right_scan /back_left_scan',
+            'use_sim_time': True,
+            'range_min': 0.3,
+            'range_max': 12.0
+        }]
+    )
+
+    # 4. الـ SLAM Toolbox
+    slam_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('slam_toolbox'), 'launch', 'online_async_launch.py')),
+        launch_arguments={
+            'use_sim_time': 'true',
+            'slam_params_file': os.path.join(pkg_path, 'config', 'mapper_params_online_async.yaml')
+        }.items()
+    )
+
+    # 5. تشغيل RViz2
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', os.path.join(pkg_path, 'rviz', 'slam_config.rviz')], # إذا كان عندك ملف إعدادات
+        parameters=[{'use_sim_time': True}],
+        output='screen'
+    )
+
+
+    return LaunchDescription([
+        gazebo_launch,
+        ros_gz_bridge,
+        # حذفنا joint_state_publisher العادي لأننا نأخذه من جازيبو مباشرة عبر الجسر
+        TimerAction(period=3.0, actions=[laser_merger_node]),
+        TimerAction(period=6.0, actions=[slam_launch]),
+        rviz_node
+
+    ])
+
+=== FILE: ./my_factory/launch/complete_nav.launch.py ===
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    pkg_share = get_package_share_directory('my_factory')
+
+    rviz_config_path = os.path.join(pkg_share, 'rviz', 'nav2_default_view.rviz')
+
+    return LaunchDescription([
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', rviz_config_path],
+            parameters=[{'use_sim_time': True}],
+            output='screen'
+        )
+    ])
+
+=== FILE: ./my_factory/launch/panda_moveit.launch.py ===
+#!/usr/bin/env python3
+"""
+Bring up the Panda manipulator in the warehouse world with MoveIt + ign_ros2_control.
+
+Requires sourcing the workspace that provides ign_ros2_control — see
+config/abdo.env.example and env/setup_abdo.bash.
+"""
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+
+import xacro
+from moveit_configs_utils import MoveItConfigsBuilder
+
+
+def generate_launch_description():
+    pkg_path = get_package_share_directory('my_factory')
+    panda_moveit_pkg = get_package_share_directory('moveit_resources_panda_moveit_config')
+
+    world_file = os.path.join(pkg_path, 'worlds', 'fac.world')
+    xacro_file = os.path.join(pkg_path, 'urdf', 'panda_ign.urdf.xacro')
+
+    robot_description = {'robot_description': xacro.process_file(xacro_file).toxml()}
+
+    moveit_config = (
+        MoveItConfigsBuilder('moveit_resources_panda', package_name='moveit_resources_panda_moveit_config')
+        .robot_description(file_path=xacro_file)
+        .robot_description_semantic(file_path='config/panda.srdf')
+        .trajectory_execution(file_path=os.path.join(pkg_path, 'config', 'moveit_controllers.yaml'))
+        .planning_pipelines(pipelines=['ompl'])
+        .to_moveit_configs()
+    )
+
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')),
+        launch_arguments={'gz_args': f'-r -v 4 {world_file}'}.items()
+    )
+
+    rsp = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        parameters=[robot_description, {'use_sim_time': True}]
+    )
+
+    spawn = Node(
+        package='ros_gz_sim',
+        executable='create',
+        output='screen',
+        arguments=['-topic', 'robot_description', '-name', 'panda', '-z', '0.0'],
+    )
+
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
+        parameters=[{'use_sim_time': True}],
+        output='screen'
+    )
+
+    jsb_spawner = Node(
+        package='controller_manager', executable='spawner',
+        arguments=['joint_state_broadcaster', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
+    arm_spawner = Node(
+        package='controller_manager', executable='spawner',
+        arguments=['panda_arm_controller', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
+    hand_spawner = Node(
+        package='controller_manager', executable='spawner',
+        arguments=['panda_hand_controller', '--controller-manager', '/controller_manager'],
+        output='screen'
+    )
+
+    move_group = Node(
+        package='moveit_ros_move_group',
+        executable='move_group',
+        output='screen',
+        parameters=[moveit_config.to_dict(), {'use_sim_time': True}],
+    )
+
+    rviz_config = os.path.join(panda_moveit_pkg, 'launch', 'moveit.rviz')
+    rviz = Node(
+        package='rviz2', executable='rviz2', name='rviz2',
+        arguments=['-d', rviz_config],
+        output='screen',
+        parameters=[
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+            moveit_config.planning_pipelines,
+            moveit_config.joint_limits,
+            {'use_sim_time': True},
+        ],
+    )
+
+    return LaunchDescription([
+        gazebo,
+        rsp,
+        bridge,
+        spawn,
+        move_group,
+        rviz,
+        RegisterEventHandler(OnProcessExit(target_action=spawn, on_exit=[jsb_spawner])),
+        RegisterEventHandler(OnProcessExit(target_action=jsb_spawner, on_exit=[arm_spawner])),
+        RegisterEventHandler(OnProcessExit(target_action=arm_spawner, on_exit=[hand_spawner])),
+    ])
+
+
+=== FILE: ./my_factory/launch/display.launch.py ===
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration, Command
+from launch_ros.actions import Node
+
+def generate_launch_description():
+
+    pkg_path = get_package_share_directory('my_factory')
+    default_rviz_config_path = os.path.join(pkg_path, 'rviz', 'urdf_config.rviz')
+    xacro_file = os.path.join(pkg_path, 'urdf', 'my_robot.urdf.xacro')
+    # تقوم بتحويل الـ URDF إلى تحويلات TF وتشرها للـ ROS
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        parameters=[{
+            'robot_description': Command(['xacro ', xacro_file]),
+            'use_sim_time': True
+        }]
+    )
+
+    # 4. عقدة Joint State Publisher GUI
+    # تظهر لك واجهة منزلقات (Sliders) للتحكم بالمفاصل يدوياً للتأكد من حركتها
+    joint_state_publisher_gui_node = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui'
+    )
+
+    # 5. تشغيل RViz2
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', default_rviz_config_path],
+        parameters=[{'use_sim_time': True}]
+    )
+
+    return LaunchDescription([
+        robot_state_publisher_node,
+        joint_state_publisher_gui_node,
+        rviz_node
+    ])
+
+=== FILE: ./my_factory/launch/main_warehouse_nav.launch.py ===
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    pkg_path = get_package_share_directory('my_factory')
+    rviz_config_path = os.path.join(get_package_share_directory('my_factory'), 'rviz', 'nav2_default_view.rviz')
+
+    params_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
+    custom_bt_xml = os.path.join(pkg_path, 'behavior_trees', 'simple_nav.xml')
+
+    # 1. تشغيل بيئة المحاكاة جازيبو
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'gazebo.launch.py'))
+    )
+
+    # 2. جسر الاتصال بين ROS 2 و Ignition Gazebo
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+            '/cmd_vel@geometry_msgs/msg/Twist]ignition.msgs.Twist',
+            '/model/warehouse_robot/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
+            '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
+            '/front_right_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+            '/back_left_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+        ],
+        remappings=[
+            ('/model/warehouse_robot/odometry', '/odom'),
+            ('/front_right_scan', '/scan')
+        ],
+        parameters=[{'use_sim_time': True}],
+        output='screen'
+    )
+
+    # 3. مرشح EKF لدمج عداد العجلات مع الـ IMU (ينشر تحويل odom -> base_footprint)
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[os.path.join(pkg_path, 'config', 'ekf.yaml'), {'use_sim_time': True}]
+    )
+
+    # 4. عقد نظام الملاحة (Nav2 Nodes)
+    nav_nodes = [
+        Node(
+            package='nav2_map_server',
+            executable='map_server',
+            name='map_server',
+            output='screen',
+            parameters=[
+                params_file, 
+                {
+                    'use_sim_time': True, 
+                    'yaml_filename': os.path.join(pkg_path, 'maps', 'warehouse_to_edit.yaml')
+                }
+            ]
+        ),
+        Node(
+            package='nav2_amcl',
+            executable='amcl',
+            name='amcl',
+            output='screen',
+            parameters=[params_file, {'use_sim_time': True}]
+        ),
+        Node(
+            package='nav2_planner',
+            executable='planner_server',
+            name='planner_server',
+            output='screen',
+            parameters=[params_file, {'use_sim_time': True}]
+        ),
+        Node(
+            package='nav2_controller',
+            executable='controller_server',
+            name='controller_server',
+            output='screen',
+            parameters=[params_file, {'use_sim_time': True}]
+        ),
+        Node(
+            package='nav2_bt_navigator',
+            executable='bt_navigator',
+            name='bt_navigator',
+            output='screen',
+            parameters=[
+                params_file, 
+                {
+                    'use_sim_time': True,
+                    'default_bt_xml_filename': custom_bt_xml,
+                    'default_nav_to_pose_bt_xml': custom_bt_xml,
+                    'default_nav_through_poses_bt_xml': custom_bt_xml
+                }
+            ]
+        ),
+        Node(
+            package='nav2_behaviors',
+            executable='behavior_server',
+            name='behavior_server',
+            output='screen',
+            parameters=[params_file, {'use_sim_time': True}]
+        ),
+        Node(
+             package='nav2_waypoint_follower',
+             executable='waypoint_follower',
+             name='waypoint_follower',
+             output='screen',
+             parameters=[params_file, {'use_sim_time': True}]
+        ),
+        
+    ]
+
+    # 5. مدير دورة الحياة (Lifecycle Manager)
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_navigation',
+        output='screen',
+        parameters=[{
+            'use_sim_time': True, 
+            'autostart': True, 
+            'node_names': [
+                'map_server', 
+                'amcl', 
+                'planner_server', 
+                'controller_server', 
+                'bt_navigator', 
+                'behavior_server',
+                'waypoint_follower'
+            ]
+        }]
+    )
+
+    # 6. تشغيل واجهة RViz2 بتأخير بسيط لضمان جاهزية العقد
+    rviz = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        parameters=[{'use_sim_time': True}],
+        arguments=['-d', rviz_config_path],
+        output='screen'
+    )
+
+    return LaunchDescription([
+        gazebo,
+        bridge,
+        ekf_node,
+        *nav_nodes,
+        lifecycle_manager,
+        TimerAction(period=12.0, actions=[rviz])
+    ])
+
+=== FILE: ./my_factory/launch/navigation_launch.py ===
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node # أضفنا هذا السطر للاحتياط
+
+def generate_launch_description():
+    nav2_bringup_share = get_package_share_directory('nav2_bringup')
+
+    map_yaml_file = os.path.join(get_package_share_directory('my_factory'), 'maps', 'warehouse_to_edit.yaml')
+    params_file = os.path.join(get_package_share_directory('my_factory'), 'config', 'nav2_params.yaml')
+
+    return LaunchDescription([
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(os.path.join(nav2_bringup_share, 'launch', 'bringup_launch.py')),
+            launch_arguments={
+                'map': map_yaml_file,
+                'params_file': params_file,
+                'use_sim_time': 'true',
+                'autostart': 'true', # تفعيل العقد تلقائياً
+            }.items(),
+        ),
+    ])
+
+=== FILE: ./my_factory/launch/gazebo.launch.py ===
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
+
+def generate_launch_description():
+    pkg_path = get_package_share_directory('my_factory')
+
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+
+    world_file = os.path.join(pkg_path, 'worlds', 'fac.world')
+
+    # 2. تشغيل محرك المحاكاة Gazebo Ignition
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')),
+        launch_arguments={'gz_args': f'-r -v 4 {world_file}'}.items() 
+    )
+
+    # 3. تشغيل الـ Robot State Publisher (لنشر الـ URDF)
+    rsp = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'rsp.launch.py')),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
+    )
+
+    # 4. استدعاء (Spawn) الروبوت داخل العالم
+    spawn_entity = Node(
+        package='ros_gz_sim',
+        executable='create',
+        arguments=['-topic', 'robot_description',
+                   '-name', 'warehouse_robot',
+                   '-z', '0.15'], 
+        output='screen'
+    )
+
+    # ملاحظة هندسية: تم حذف قسم الـ Bridge من هنا 
+    # لأنك تقوم بتشغيله في ملف الـ main_launch.py
+    # تشغيله في مكانين هو سبب الـ Flickering (الرفرفة) في RViz
+
+    return LaunchDescription([
+        DeclareLaunchArgument('use_sim_time', default_value='true'),
+        gazebo,
+        rsp,
+        spawn_entity
+    ])
+
+=== FILE: ./my_factory/launch/main_launch.py ===
+#!/usr/bin/env python3
+
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, TimerAction, DeclareLaunchArgument
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
+
+def generate_launch_description():
+    package_name = 'my_factory'
+    pkg_path = get_package_share_directory(package_name)
+
+    # إعدادات استخدام وقت المحاكي لضمان تزامن الـ TF
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    declare_use_sim_time = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation clock'
+    )
+
+    # 1. تشغيل المحاكي (Gazebo) وملف الـ Robot State Publisher
+    gazebo_sim = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'gazebo.launch.py')),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
+    )
+
+    # 2. الجسر (Bridge) - النسخة المستقرة مع إضافة lazy: False
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        # --- الإضافة هنا لضمان استقرار النشر ومزامنة الوقت ---
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'lazy': False
+        }],
+        # --------------------------------------------------
+        arguments=[
+            # مزامنة الساعة (Clock)
+            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+            
+            # التحكم بالحركة (cmd_vel)
+            '/cmd_vel@geometry_msgs/msg/Twist]ignition.msgs.Twist',
+            
+            # بيانات الـ Odometry
+            '/model/warehouse_robot/odometry@nav_msgs/msg/Odometry[ignition.msgs.Odometry',
+            
+            # بيانات الـ IMU (تُدمج مع عداد العجلات في الـ EKF)
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
+            
+            # حالة المفاصل (لتحريك العجلات في RViz)
+            '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
+            
+            # الحساسات (الليزر)
+            '/front_right_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+            '/back_left_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+        ],
+        remappings=[
+            ('/model/warehouse_robot/odometry', '/odom'),
+            ('/front_right_scan', '/scan') # الحساس الأساسي للـ SLAM
+        ],
+        output='screen'
+    )
+
+    # 2.5 مرشح EKF لدمج عداد العجلات مع الـ IMU (ينشر تحويل odom -> base_footprint)
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[os.path.join(pkg_path, 'config', 'ekf.yaml'), {'use_sim_time': use_sim_time}]
+    )
+
+    # 3. الـ SLAM Toolbox - لبناء الخريطة (map)
+    slam_toolbox = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('slam_toolbox'), 'launch', 'online_async_launch.py')),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'slam_params_file': os.path.join(pkg_path, 'config', 'mapper_params_online_async.yaml')
+        }.items()
+    )
+
+    # 4. تشغيل RViz2
+    rviz = Node(
+        package='rviz2',
+        executable='rviz2',
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['-d', os.path.join(pkg_path, 'rviz', 'view_robot.rviz')]
+    )
+
+    return LaunchDescription([
+        declare_use_sim_time,
+        gazebo_sim,
+        bridge,
+        ekf_node,
+        rviz,
+        # تأخير الـ SLAM قليلاً لضمان استقرار شجرة الـ TF أولاً
+        TimerAction(period=7.0, actions=[slam_toolbox])
+    ])
+
+=== FILE: ./my_factory/launch/rsp.launch.py ===
+#!/usr/bin/env python3
+
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+import xacro
+
+def generate_launch_description():
+
+    package_name = 'my_factory'
+    pkg_path = get_package_share_directory(package_name)
+    xacro_file = os.path.join(pkg_path, 'urdf', 'my_robot.urdf.xacro')
+
+    # معالجة الملف وتحويله
+    robot_description_config = xacro.process_file(xacro_file)
+    robot_description_raw = robot_description_config.toxml()
+
+    # استخدام الـ LaunchConfiguration لضمان استلام القيمة من الملف الرئيسي
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
+    # إعداد عقدة الـ Robot State Publisher
+    node_robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        parameters=[{
+            'robot_description': robot_description_raw,
+            'use_sim_time': use_sim_time, # هاد السطر هو اللي بربط الزمن بالمحاكي
+            'publish_frequency': 50.0,
+            'ignore_timestamp': False,
+            # إضافة frame_prefix فارغ يضمن عدم حدوث إزاحة بأسماء الـ Links
+            'frame_prefix': '' 
+        }]
+    )
+
+    return LaunchDescription([
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='true',
+            description='Use simulation (Gazebo) clock if true'),
+            
+        node_robot_state_publisher
+    ])
+
+=== FILE: ./my_factory/behavior_trees/simple_nav.xml ===
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="1.0">
+          <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+        </RateController>
+        <FollowPath path="{path}" controller_id="FollowPath"/>
+    </PipelineSequence>
+  </BehaviorTree>
+</root>
+
+=== FILE: ./my_factory/maps/warehouse_full_data.yaml ===
+image: warehouse_full_data.pgm
+mode: trinary
+resolution: 0.05
+origin: [-11.9, -15, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.25
+
+=== FILE: ./my_factory/maps/warehouse_to_edit.yaml ===
+image: warehouse_to_edit.pgm
+mode: trinary
+resolution: 0.05
+origin: [-15.2, -15.3, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.25
+

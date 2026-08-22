@@ -1,8 +1,11 @@
 <sdf version='1.7'>
   <world name='default'>
+    <!-- محركات النظام الأساسية -->
     <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics"/>
     <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands"/>
     <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster"/>
+    
+    <!-- محرك الحساسات (تم إبقاؤه مرة واحدة فقط) -->
     <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
@@ -72,12 +75,12 @@
           </material>
         </visual>
       </link>
-      <pose>0.794985 -0.443467 0.05 0 -0 0</pose>
+      <pose>-6.2 -7.4 0.05 0 0 0</pose>
     </model>
 
     <model name='Untitled'>
       <static>1</static>
-      <pose>7 7 0.1 0 -0 0</pose>
+      <pose>0 0 0.1 0 0 0</pose>
       
       <link name='Wall_0'>
         <collision name='Wall_0_Collision'>
@@ -250,6 +253,298 @@
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
     </scene>
+
+    <!-- ========================================== -->
+    <!-- 8 صناديق مركبة بمسافات منتظمة (فراغ 10 سم) -->
+    <!-- ========================================== -->
+
+    <!-- الصندوق الأول -->
+    <model name='composite_box_1'>
+      <pose>5.86 -16.5 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق الثاني -->
+    <model name='composite_box_2'>
+      <pose>5.86 -16.8 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق الثالث -->
+    <model name='composite_box_3'>
+      <pose>5.86 -17.1 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق الرابع -->
+    <model name='composite_box_4'>
+      <pose>5.86 -17.4 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق الخامس -->
+    <model name='composite_box_5'>
+      <pose>5.86 -17.7 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق السادس -->
+    <model name='composite_box_6'>
+      <pose>5.86 -18.0 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق السابع -->
+    <model name='composite_box_7'>
+      <pose>5.86 -18.3 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
+
+    <!-- الصندوق الثامن -->
+    <model name='composite_box_8'>
+      <pose>5.86 -18.6 0.10 0 0 0</pose>
+      <link name='base_link'>
+        <visual name='base_visual'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material><ambient>0.85 0.65 0.1 1</ambient><diffuse>0.85 0.65 0.1 1</diffuse></material>
+        </visual>
+        <collision name='base_collision'>
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+        </inertial>
+      </link>
+      <link name='handle_link'>
+        <pose>0 0 0.13 0 0 0</pose>
+        <visual name='handle_visual'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+          <material><ambient>1 1 1 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <collision name='handle_collision'>
+          <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+        </inertial>
+      </link>
+      <joint name='handle_joint' type='fixed'>
+        <parent>base_link</parent>
+        <child>handle_link</child>
+      </joint>
+    </model>
 
   </world>
 </sdf>

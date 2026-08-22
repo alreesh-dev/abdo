@@ -6,7 +6,7 @@
         <joint name="${prefix}_bracket_joint" type="fixed">
             <parent link="base_link"/>
             <child link="${prefix}_bracket"/>
-            <origin xyz="${x_pos * 0.98} ${y_pos * 0.98} ${z_pos - 0.02}" rpy="0 0 ${rotation}"/>
+            <origin xyz="${x_pos} ${y_pos} ${z_pos}" rpy="0 0 ${rotation}"/>
         </joint>
 
         <link name="${prefix}_bracket">
@@ -49,13 +49,13 @@
                         <horizontal>
                             <samples>360</samples>
                             <resolution>1</resolution>
-                            <min_angle>-3.14</min_angle>
-                            <max_angle>3.14</max_angle>
+                            <min_angle>-3.14159</min_angle>
+                            <max_angle>3.14159</max_angle>
                         </horizontal>
                     </scan>
                     <range>
                         <min>0.3</min>
-                        <max>12.0</max>
+                        <max>60.0</max>
                         <resolution>0.01</resolution>
                     </range>
                 </lidar>
@@ -65,7 +65,5 @@
         </gazebo>
     </xacro:macro>
 
-    <xacro:lidar prefix="front_right" x_pos="1.0" y_pos="-1.0" z_pos="0.27" rotation="${-pi/4}"/>
-    <xacro:lidar prefix="back_left" x_pos="-1.0" y_pos="1.0" z_pos="0.27" rotation="${3*pi/4}"/>
-
-</robot>
+    <xacro:lidar prefix="front_right" x_pos="-0.36" y_pos="0.0" z_pos="0.92" rotation="0.0"/>
+    </robot>

@@ -1,14 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
 
-    <!--
-      Ignition-ready Panda for ign_ros2_control + MoveIt.
-      The MoveIt panda description (moveit_resources_panda_description) is purely
-      visual/kinematic (no <inertial>), so this file re-declares the chain with the
-      same meshes/origins/limits PLUS approximate Franka link inertials and a fixed
-      'world' base so the arm can be simulated under physics.
-    -->
-
     <xacro:property name="mesh_pkg" value="package://moveit_resources_panda_description/meshes"/>
 
     <xacro:macro name="panda_inertial" params="mass inertia">
@@ -19,12 +11,11 @@
         </inertial>
     </xacro:macro>
 
-    <!-- Fixed base: anchor the arm to the world at the origin on the floor -->
     <link name="world"/>
     <joint name="panda_world_joint" type="fixed">
         <parent link="world"/>
         <child link="panda_link0"/>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="5.36 -16.9 0.11" rpy="0 0 0"/>
     </joint>
 
     <link name="panda_link0">
@@ -43,7 +34,7 @@
         <parent link="panda_link0"/><child link="panda_link1"/>
         <axis xyz="0 0 1"/>
         <limit effort="87" lower="-2.9671" upper="2.9671" velocity="2.3925"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link2">
@@ -56,7 +47,7 @@
         <parent link="panda_link1"/><child link="panda_link2"/>
         <axis xyz="0 0 1"/>
         <limit effort="87" lower="-1.8326" upper="1.8326" velocity="2.3925"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link3">
@@ -69,7 +60,7 @@
         <parent link="panda_link2"/><child link="panda_link3"/>
         <axis xyz="0 0 1"/>
         <limit effort="87" lower="-2.9671" upper="2.9671" velocity="2.3925"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link4">
@@ -82,7 +73,7 @@
         <parent link="panda_link3"/><child link="panda_link4"/>
         <axis xyz="0 0 1"/>
         <limit effort="87" lower="-3.1416" upper="0.0873" velocity="2.3925"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link5">
@@ -95,7 +86,7 @@
         <parent link="panda_link4"/><child link="panda_link5"/>
         <axis xyz="0 0 1"/>
         <limit effort="12" lower="-2.9671" upper="2.9671" velocity="2.8710"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link6">
@@ -108,7 +99,7 @@
         <parent link="panda_link5"/><child link="panda_link6"/>
         <axis xyz="0 0 1"/>
         <limit effort="12" lower="-0.0873" upper="3.8223" velocity="2.8710"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link7">
@@ -121,7 +112,7 @@
         <parent link="panda_link6"/><child link="panda_link7"/>
         <axis xyz="0 0 1"/>
         <limit effort="12" lower="-2.9671" upper="2.9671" velocity="2.8710"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
     </joint>
 
     <link name="panda_link8">
@@ -163,7 +154,7 @@
         <origin rpy="0 0 0" xyz="0 0 0.0584"/>
         <axis xyz="0 1 0"/>
         <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="0.0"/>
     </joint>
     <joint name="panda_finger_joint2" type="prismatic">
         <parent link="panda_hand"/><child link="panda_rightfinger"/>
@@ -171,13 +162,12 @@
         <axis xyz="0 -1 0"/>
         <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
         <mimic joint="panda_finger_joint1"/>
-        <dynamics damping="1.0" friction="0.0"/>
+        <dynamics damping="10.0" friction="0.0"/>
     </joint>
 
-    <!-- ros2_control: Ignition hardware -->
-    <ros2_control name="PandaIgnitionSystem" type="system">
+    <ros2_control name="PandaGazeboSystem" type="system">
         <hardware>
-            <plugin>ign_ros2_control/IgnitionSystem</plugin>
+            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
         </hardware>
         <xacro:macro name="arm_joint_ctrl" params="jname init">
             <joint name="${jname}">
@@ -194,14 +184,13 @@
         <xacro:arm_joint_ctrl jname="panda_joint5" init="0.0"/>
         <xacro:arm_joint_ctrl jname="panda_joint6" init="1.571"/>
         <xacro:arm_joint_ctrl jname="panda_joint7" init="0.785"/>
+        
         <joint name="panda_finger_joint1">
             <command_interface name="position"/>
             <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
             <state_interface name="velocity"/>
             <state_interface name="effort"/>
         </joint>
-        <!-- ign_ros2_control mirrors this joint from finger_joint1 via the 'mimic' param
-             (it does NOT read the URDF <mimic> tag), so it must be declared here. -->
         <joint name="panda_finger_joint2">
             <param name="mimic">panda_finger_joint1</param>
             <param name="multiplier">1</param>
@@ -212,11 +201,68 @@
         </joint>
     </ros2_control>
 
-    <!-- ign_ros2_control system plugin: runs the controller_manager inside Ignition -->
     <gazebo>
-        <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+        <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>$(find my_factory)/config/panda_controllers.yaml</parameters>
-            <controller_manager_node_name>controller_manager</controller_manager_node_name>
+            <robot_param_node>/panda/robot_state_publisher</robot_param_node>
+            <controller_manager_node_name>/controller_manager</controller_manager_node_name>
+            <ros>
+                <remapping>/joint_states:=/panda/joint_states</remapping>
+            </ros>
+        </plugin>
+    </gazebo>
+
+    <!-- ========================================== -->
+    <!-- 🟢 إضافة كاميرا السقف الثابتة فوق المكعب مباشرة -->
+    <!-- ========================================== -->
+    
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="0.04 0.04 0.04"/> <!-- كبرتها قليلاً لتراها بوضوح في المحاكي -->
+            </geometry>
+            <material name="black">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.04 0.04 0.04"/>
+            </geometry>
+        </collision>
+        <xacro:panda_inertial mass="0.05" inertia="0.0001"/>
+    </link>
+
+    <!-- 🛠️ تم التعديل: ربط الكاميرا بالعالم (world) مباشرة لسهولة وضع الإحداثيات -->
+    <joint name="camera_joint" type="fixed">
+        <parent link="world"/>
+        <child link="camera_link"/>
+        <!-- إحداثيات المكعب + 70 سم ارتفاع (Z = 0.36 + 0.70 = 1.06) والنظر لأسفل بزاوية 90 درجة (Pitch = 1.5708) -->
+        <origin xyz="6.0 -16.8 1.06" rpy="0 1.5708 0"/> 
+    </joint>
+
+    <gazebo reference="camera_link">
+        <sensor name="panda_camera" type="rgbd">
+            <camera>
+                <horizontal_fov>1.047</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.01</near>
+                    <far>20.0</far>
+                </clip>
+            </camera>
+            <always_on>1</always_on>
+            <update_rate>30.0</update_rate>
+            <visualize>true</visualize>
+            <topic>camera/image_raw</topic>
+        </sensor>
+        
+        <plugin filename="libignition-gazebo-sensors-system.so" name="ignition::gazebo::systems::Sensors">
+            <render_engine>ogre2</render_engine>
         </plugin>
     </gazebo>
 

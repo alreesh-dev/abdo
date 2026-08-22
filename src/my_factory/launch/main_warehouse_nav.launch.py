@@ -5,6 +5,10 @@ from launch.actions import IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
+# 🟢 إضافة مكتبات MoveIt لكي يفهمها RViz
+from moveit_configs_utils import MoveItConfigsBuilder
+import xacro
+
 def generate_launch_description():
     pkg_path = get_package_share_directory('my_factory')
     rviz_config_path = os.path.join(get_package_share_directory('my_factory'), 'rviz', 'nav2_default_view.rviz')
@@ -12,12 +16,28 @@ def generate_launch_description():
     params_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
     custom_bt_xml = os.path.join(pkg_path, 'behavior_trees', 'simple_nav.xml')
 
+    # 🟢 تهيئة إعدادات الذراع لتمريرها إلى RViz لكي يظهر القوائم والمجسم
+    xacro_file = os.path.join(pkg_path, 'urdf', 'panda_ign.urdf.xacro')
+    moveit_config = (
+        MoveItConfigsBuilder('moveit_resources_panda', package_name='moveit_resources_panda_moveit_config')
+        .robot_description(file_path=xacro_file)
+        .robot_description_semantic(file_path='config/panda.srdf')
+        .trajectory_execution(file_path=os.path.join(pkg_path, 'config', 'moveit_controllers.yaml'))
+        .planning_pipelines(pipelines=['ompl'])
+        .to_moveit_configs()
+    )
+
     # 1. تشغيل بيئة المحاكاة جازيبو
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'gazebo.launch.py'))
     )
 
-    # 2. جسر الاتصال بين ROS 2 و Ignition Gazebo
+    # إضافة أمر استدعاء ملف حقن الذراع الخاص بـ MoveIt
+    panda_arm = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'spawn_panda_only.launch.py'))
+    )
+
+    # 2. جسر الاتصال بين ROS 2 و Ignition Gazebo (تم دمجه بالكامل مع الكاميرات)
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -29,12 +49,23 @@ def generate_launch_description():
             '/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
             '/front_right_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
             '/back_left_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
+            
+            # 📸 مسارات الكاميرا المدمجة (لونية، عمق، وسحابة نقاط) لتفادي انهيار النظام
+            '/camera/image_raw/image@sensor_msgs/msg/Image[ignition.msgs.Image',
+            '/camera/image_raw/depth_image@sensor_msgs/msg/Image[ignition.msgs.Image',
+            '/camera/image_raw/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked'
         ],
         remappings=[
             ('/model/warehouse_robot/odometry', '/odom'),
-            ('/front_right_scan', '/scan')
+            ('/front_right_scan', '/scan'),  # الليدار الرئيسي المرفوع على العمود
+            # إعادة تسمية مسارات الكاميرا لتطابق أكواد الرؤية والملاحة
+            ('/camera/image_raw/image', '/camera/image_raw'),
+            ('/camera/image_raw/points', '/camera/points')
         ],
-        parameters=[{'use_sim_time': True}],
+        parameters=[{
+            'use_sim_time': True,
+            'lazy': False  # لضمان استقرار البث ومنع أي رفرفة أو انقطاع
+        }],
         output='screen'
     )
 
@@ -112,7 +143,6 @@ def generate_launch_description():
              output='screen',
              parameters=[params_file, {'use_sim_time': True}]
         ),
-        
     ]
 
     # 5. مدير دورة الحياة (Lifecycle Manager)
@@ -141,7 +171,8 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        parameters=[{'use_sim_time': True}],
+        # 🟢 السر هنا: قمنا بحقن إعدادات الذراع (moveit_config) داخل RViz
+        parameters=[moveit_config.to_dict(), {'use_sim_time': True}],
         arguments=['-d', rviz_config_path],
         output='screen'
     )
@@ -150,6 +181,9 @@ def generate_launch_description():
         gazebo,
         bridge,
         ekf_node,
+        
+        panda_arm,  
+        
         *nav_nodes,
         lifecycle_manager,
         TimerAction(period=12.0, actions=[rviz])

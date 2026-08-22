@@ -6,7 +6,7 @@
 #   # edit paths in abdo.env
 #   source env/setup_abdo.bash
 
-set -euo pipefail
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"

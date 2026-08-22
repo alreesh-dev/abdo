@@ -12,30 +12,33 @@
             <right_joint>front_right_wheel_joint</right_joint>
             <right_joint>back_right_wheel_joint</right_joint>
 
-            <wheel_separation>2.1</wheel_separation>
-            <wheel_diameter>0.3</wheel_diameter>
-
+            <wheel_separation>0.84</wheel_separation> 
+            <wheel_diameter>0.20</wheel_diameter>     
             <max_wheel_torque>60</max_wheel_torque>
             <max_wheel_acceleration>2.0</max_wheel_acceleration>
             <max_linear_acceleration>1.0</max_linear_acceleration>
             <max_angular_acceleration>1.5</max_angular_acceleration>
             
-            <topic>cmd_vel</topic>
+            <topic>/cmd_vel</topic>
             <frame_id>odom</frame_id>
             <child_frame_id>base_footprint</child_frame_id>
 
-            <publish_odom>true</publish_odom>
+            <odom_topic>trash_odom</odom_topic>
             
             <publish_odom_tf>false</publish_odom_tf> 
-            
             <publish_wheel_tf>false</publish_wheel_tf> 
-            
-            <use_sim_time>true</use_sim_time>
-            <update_rate>50</update_rate>
+        </plugin>
+
+        <plugin filename="ignition-gazebo-odometry-publisher-system" name="ignition::gazebo::systems::OdometryPublisher">
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
+            <odom_publish_frequency>50</odom_publish_frequency>
+            <odom_topic>/model/warehouse_robot/odometry</odom_topic>
+            <dimensions>2</dimensions>
         </plugin>
 
         <plugin filename="ignition-gazebo-joint-state-publisher-system" name="ignition::gazebo::systems::JointStatePublisher">
-            <topic>joint_states</topic>
+            <topic>/joint_states</topic>
             <joint_name>front_left_wheel_joint</joint_name>
             <joint_name>front_right_wheel_joint</joint_name>
             <joint_name>back_left_wheel_joint</joint_name>

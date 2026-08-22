@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <joint name="camera_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="camera_link"/>
+        <origin xyz="0.38 0.0 0.115" rpy="0 0 0"/> 
+    </joint>
+
+    <link name="camera_link">
+        <visual>
+            <geometry> <box size="0.03 0.1 0.03"/> </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry> <box size="0.03 0.1 0.03"/> </geometry>
+        </collision>
+        <xacro:inertial_box mass="0.05" x="0.03" y="0.1" z="0.03">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="camera_depth_joint" type="fixed">
+        <parent link="camera_link"/>
+        <child link="camera_depth_frame"/>
+        <!-- 🟢 الزوايا أصفار لكي ينظر للأمام مباشرة -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+    <link name="camera_depth_frame"/>
+
+    <gazebo reference="camera_link">
+        <sensor name="depth_camera" type="gpu_lidar">
+            <always_on>1</always_on>
+            <update_rate>5.0</update_rate>
+            <visualize>true</visualize>
+            <topic>camera</topic>
+            <!-- 🟢 تم إرجاع الإطار الوهمي لتفادي انهيار جازيبو واختفاء الخريطة -->
+            <gz_frame_id>camera_depth_frame</gz_frame_id>
+            <lidar>
+                <scan>
+                    <horizontal>
+                        <samples>60</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.8</min_angle>
+                        <max_angle>0.8</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>10</samples>
+                        <resolution>1</resolution>
+                        <!-- 🟢 الزاوية السالبة هنا تجعله ينظر للأسفل نحو الصناديق -->
+                        <min_angle>-0.4</min_angle>
+                        <max_angle>0.1</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.15</min>
+                    <max>3.5</max>
+                    <resolution>0.01</resolution>
+                </range>
+            </lidar>
+        </sensor>
+    </gazebo>
+
+</robot>
