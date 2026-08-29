@@ -212,58 +212,7 @@
         </plugin>
     </gazebo>
 
-    <!-- ========================================== -->
-    <!-- 🟢 إضافة كاميرا السقف الثابتة فوق المكعب مباشرة -->
-    <!-- ========================================== -->
-    
-    <link name="camera_link">
-        <visual>
-            <geometry>
-                <box size="0.04 0.04 0.04"/> <!-- كبرتها قليلاً لتراها بوضوح في المحاكي -->
-            </geometry>
-            <material name="black">
-                <color rgba="0.1 0.1 0.1 1.0"/>
-            </material>
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.04 0.04 0.04"/>
-            </geometry>
-        </collision>
-        <xacro:panda_inertial mass="0.05" inertia="0.0001"/>
-    </link>
-
-    <!-- 🛠️ تم التعديل: ربط الكاميرا بالعالم (world) مباشرة لسهولة وضع الإحداثيات -->
-    <joint name="camera_joint" type="fixed">
-        <parent link="world"/>
-        <child link="camera_link"/>
-        <!-- إحداثيات المكعب + 70 سم ارتفاع (Z = 0.36 + 0.70 = 1.06) والنظر لأسفل بزاوية 90 درجة (Pitch = 1.5708) -->
-        <origin xyz="6.0 -16.8 1.06" rpy="0 1.5708 0"/> 
-    </joint>
-
-    <gazebo reference="camera_link">
-        <sensor name="panda_camera" type="rgbd">
-            <camera>
-                <horizontal_fov>1.047</horizontal_fov>
-                <image>
-                    <width>640</width>
-                    <height>480</height>
-                    <format>R8G8B8</format>
-                </image>
-                <clip>
-                    <near>0.01</near>
-                    <far>20.0</far>
-                </clip>
-            </camera>
-            <always_on>1</always_on>
-            <update_rate>30.0</update_rate>
-            <visualize>true</visualize>
-            <topic>camera/image_raw</topic>
-        </sensor>
-        
-        <plugin filename="libignition-gazebo-sensors-system.so" name="ignition::gazebo::systems::Sensors">
-            <render_engine>ogre2</render_engine>
-        </plugin>
-    </gazebo>
+    <!-- 🟢 استدعاء ملف كاميرا الذراع السقفية -->
+    <xacro:include filename="arm_camera.xacro"/>
 
 </robot>

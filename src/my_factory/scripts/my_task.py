@@ -51,9 +51,9 @@ class IndustrialMissionManager(Node):
             if result == TaskResult.SUCCEEDED:
                 self.get_logger().info(f"تم الوصول للهدف رقم {i+1} بنجاح.")
                 
-                # جاري الانتظار في الموقع
-                self.get_logger().info("جاري الانتظار في الموقع (5 ثوانٍ)...")
-                time.sleep(5) 
+                # 💡 التعديل هنا: الانتظار 10 ثوانٍ بدلاً من 5
+                self.get_logger().info("جاري الانتظار في الموقع (10 ثوانٍ)...")
+                time.sleep(10) 
                 
             else:
                 self.get_logger().error(f"فشل الوصول للهدف رقم {i+1}!")
@@ -65,11 +65,11 @@ def main():
     
     # 🟢 تعريف قائمة المهام بالإحداثيات الجديدة 🟢
     mission_goals = [
-        # الهدف الأول 
-        manager.create_pose(-15.2, 2.88, yaw_z=0.0, yaw_w=1.0),
+        # 💡 التعديل هنا: الهدف الأول (X=2.0, Y=-17.0)
+        manager.create_pose(2.0, -17.0, yaw_z=0.0, yaw_w=1.0),
         
-        # الهدف الثاني 
-        manager.create_pose(2.14, -17.9, yaw_z=0.0, yaw_w=1.0)
+        # 💡 التعديل هنا: الهدف الثاني (X=-19.0, Y=-19.0)
+        manager.create_pose(-19.0, -19.0, yaw_z=0.0, yaw_w=1.0)
     ]
     
     try:

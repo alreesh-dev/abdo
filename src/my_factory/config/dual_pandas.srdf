@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<robot name="dual_panda">
+    
+    <!-- 🟢 1. مجموعات التخطيط لذراع التحميل (Load Arm) -->
+    <group name="load_arm">
+        <chain base_link="load_link0" tip_link="load_link8" />
+    </group>
+    <group name="load_hand">
+        <link name="load_hand" />
+        <link name="load_leftfinger" />
+        <link name="load_rightfinger" />
+        <joint name="load_finger_joint1" />
+        <joint name="load_finger_joint2" />
+    </group>
+
+    <!-- 🟢 2. مجموعات التخطيط لذراع التفريغ (Unload Arm) -->
+    <group name="unload_arm">
+        <chain base_link="unload_link0" tip_link="unload_link8" />
+    </group>
+    <group name="unload_hand">
+        <link name="unload_hand" />
+        <link name="unload_leftfinger" />
+        <link name="unload_rightfinger" />
+        <joint name="unload_finger_joint1" />
+        <joint name="unload_finger_joint2" />
+    </group>
+
+    <!-- 🎯 3. تعريف النهايات العاملة (End Effectors) -->
+    <end_effector name="load_hand_ee" parent_link="load_link8" group="load_hand" />
+    <end_effector name="unload_hand_ee" parent_link="unload_link8" group="unload_hand" />
+
+    <!-- 🛡️ 4. إلغاء التصادم الذاتي الشامل لذراع التحميل (Load Arm) -->
+    <disable_collisions link1="load_link0" link2="load_link1" reason="Adjacent" />
+    <disable_collisions link1="load_link0" link2="load_link2" reason="Never" />
+    <disable_collisions link1="load_link0" link2="load_link3" reason="Never" />
+    <disable_collisions link1="load_link0" link2="load_link4" reason="Never" />
+    <disable_collisions link1="load_link1" link2="load_link2" reason="Adjacent" />
+    <disable_collisions link1="load_link1" link2="load_link3" reason="Never" />
+    <disable_collisions link1="load_link1" link2="load_link4" reason="Never" />
+    <disable_collisions link1="load_link2" link2="load_link3" reason="Adjacent" />
+    <disable_collisions link1="load_link2" link2="load_link4" reason="Never" />
+    <disable_collisions link1="load_link2" link2="load_link6" reason="Never" />
+    <disable_collisions link1="load_link3" link2="load_link4" reason="Adjacent" />
+    <disable_collisions link1="load_link3" link2="load_link5" reason="Never" />
+    <disable_collisions link1="load_link3" link2="load_link6" reason="Never" />
+    <disable_collisions link1="load_link3" link2="load_link7" reason="Never" />
+    <disable_collisions link1="load_link4" link2="load_link5" reason="Adjacent" />
+    <disable_collisions link1="load_link4" link2="load_link6" reason="Never" />
+    <disable_collisions link1="load_link4" link2="load_link7" reason="Never" />
+    <disable_collisions link1="load_link4" link2="load_link8" reason="Never" />
+    <disable_collisions link1="load_link5" link2="load_link6" reason="Adjacent" />
+    <disable_collisions link1="load_link5" link2="load_link7" reason="Never" />
+    <disable_collisions link1="load_link6" link2="load_link7" reason="Adjacent" />
+    <disable_collisions link1="load_link6" link2="load_link8" reason="Never" />
+    <disable_collisions link1="load_link7" link2="load_link8" reason="Adjacent" />
+    <disable_collisions link1="load_link8" link2="load_hand" reason="Adjacent" />
+    <disable_collisions link1="load_hand" link2="load_leftfinger" reason="Adjacent" />
+    <disable_collisions link1="load_hand" link2="load_rightfinger" reason="Adjacent" />
+    <disable_collisions link1="load_leftfinger" link2="load_rightfinger" reason="Default" />
+    <disable_collisions link1="load_link4" link2="load_hand" reason="Never" />
+    <disable_collisions link1="load_link6" link2="load_hand" reason="Never" />
+    <disable_collisions link1="load_link7" link2="load_hand" reason="Never" />
+
+    <!-- 🛡️ 5. إلغاء التصادم الذاتي الشامل لذراع التفريغ (Unload Arm) -->
+    <disable_collisions link1="unload_link0" link2="unload_link1" reason="Adjacent" />
+    <disable_collisions link1="unload_link0" link2="unload_link2" reason="Never" />
+    <disable_collisions link1="unload_link0" link2="unload_link3" reason="Never" />
+    <disable_collisions link1="unload_link0" link2="unload_link4" reason="Never" />
+    <disable_collisions link1="unload_link1" link2="unload_link2" reason="Adjacent" />
+    <disable_collisions link1="unload_link1" link2="unload_link3" reason="Never" />
+    <disable_collisions link1="unload_link1" link2="unload_link4" reason="Never" />
+    <disable_collisions link1="unload_link2" link2="unload_link3" reason="Adjacent" />
+    <disable_collisions link1="unload_link2" link2="unload_link4" reason="Never" />
+    <disable_collisions link1="unload_link2" link2="unload_link6" reason="Never" />
+    <disable_collisions link1="unload_link3" link2="unload_link4" reason="Adjacent" />
+    <disable_collisions link1="unload_link3" link2="unload_link5" reason="Never" />
+    <disable_collisions link1="unload_link3" link2="unload_link6" reason="Never" />
+    <disable_collisions link1="unload_link3" link2="unload_link7" reason="Never" />
+    <disable_collisions link1="unload_link4" link2="unload_link5" reason="Adjacent" />
+    <disable_collisions link1="unload_link4" link2="unload_link6" reason="Never" />
+    <disable_collisions link1="unload_link4" link2="unload_link7" reason="Never" />
+    <disable_collisions link1="unload_link4" link2="unload_link8" reason="Never" />
+    <disable_collisions link1="unload_link5" link2="unload_link6" reason="Adjacent" />
+    <disable_collisions link1="unload_link5" link2="unload_link7" reason="Never" />
+    <disable_collisions link1="unload_link6" link2="unload_link7" reason="Adjacent" />
+    <disable_collisions link1="unload_link6" link2="unload_link8" reason="Never" />
+    <disable_collisions link1="unload_link7" link2="unload_link8" reason="Adjacent" />
+    <disable_collisions link1="unload_link8" link2="unload_hand" reason="Adjacent" />
+    <disable_collisions link1="unload_hand" link2="unload_leftfinger" reason="Adjacent" />
+    <disable_collisions link1="unload_hand" link2="unload_rightfinger" reason="Adjacent" />
+    <disable_collisions link1="unload_leftfinger" link2="unload_rightfinger" reason="Default" />
+    <disable_collisions link1="unload_link4" link2="unload_hand" reason="Never" />
+    <disable_collisions link1="unload_link6" link2="unload_hand" reason="Never" />
+    <disable_collisions link1="unload_link7" link2="unload_hand" reason="Never" />
+
+    <!-- 🌟 6. وضعيات جاهزة لقابض ذراع التحميل -->
+    <group_state name="open" group="load_hand">
+        <joint name="load_finger_joint1" value="0.04" />
+        <joint name="load_finger_joint2" value="0.04" />
+    </group_state>
+    <group_state name="close" group="load_hand">
+        <joint name="load_finger_joint1" value="0.0" />
+        <joint name="load_finger_joint2" value="0.0" />
+    </group_state>
+
+    <!-- 🌟 7. وضعيات جاهزة لقابض ذراع التفريغ -->
+    <group_state name="open" group="unload_hand">
+        <joint name="unload_finger_joint1" value="0.04" />
+        <joint name="unload_finger_joint2" value="0.04" />
+    </group_state>
+    <group_state name="close" group="unload_hand">
+        <joint name="unload_finger_joint1" value="0.0" />
+        <joint name="unload_finger_joint2" value="0.0" />
+    </group_state>
+
+</robot>

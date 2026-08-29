@@ -24,7 +24,7 @@ amcl:
     scan_topic: /scan
     map_topic: /map
     set_initial_pose: True
-    initial_pose: [0.0, 0.0, 0.0, 0.0]
+    initial_pose: [-17.0, -10.5, 0.0, 0.0]
     update_min_d: 0.1
     update_min_a: 0.1
     robot_model_type: "nav2_amcl::OmniMotionModel"
@@ -163,7 +163,8 @@ local_costmap:
         z_voxels: 40
         max_obstacle_height: 2.0
         mark_threshold: 0
-        observation_sources: scan depth_camera
+        # 🟢 تمت إضافة base_camera_scan هنا
+        observation_sources: scan depth_camera base_camera_scan
         scan:
           topic: /scan
           max_obstacle_height: 2.0
@@ -189,6 +190,20 @@ local_costmap:
           raytrace_min_range: 0.1
           obstacle_max_range: 3.5
           obstacle_min_range: 0.15
+        # 🟢 إعدادات كاميرا المنصة (كـ LaserScan)
+        base_camera_scan:
+          topic: /base_camera/scan
+          max_obstacle_height: 1.0
+          min_obstacle_height: 0.09
+          clearing: True
+          marking: True
+          reliability: "best_effort"
+          durability: "volatile"
+          data_type: "LaserScan"
+          raytrace_max_range: 4.0
+          raytrace_min_range: 0.05
+          obstacle_max_range: 3.5
+          obstacle_min_range: 0.1
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -220,7 +235,8 @@ global_costmap:
         z_resolution: 0.05
         z_voxels: 40
         mark_threshold: 0
-        observation_sources: scan depth_camera
+        # 🟢 تمت إضافة base_camera_scan هنا أيضاً
+        observation_sources: scan depth_camera base_camera_scan
         scan:
           topic: /scan
           max_obstacle_height: 2.0
@@ -246,10 +262,24 @@ global_costmap:
           raytrace_min_range: 0.1
           obstacle_max_range: 3.5
           obstacle_min_range: 0.15
+        # 🟢 إعدادات كاميرا المنصة (كـ LaserScan)
+        base_camera_scan:
+          topic: /base_camera/scan
+          max_obstacle_height: 1.0
+          min_obstacle_height: 0.09
+          clearing: True
+          marking: True
+          reliability: "best_effort"
+          durability: "volatile"
+          data_type: "LaserScan"
+          raytrace_max_range: 4.0
+          raytrace_min_range: 0.05
+          obstacle_max_range: 5.0
+          obstacle_min_range: 0.1
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 5.0          
-        inflation_radius: 0.65            
+        cost_scaling_factor: 7.0          
+        inflation_radius: 0.00            
       always_send_full_costmap: True
 
 planner_server:

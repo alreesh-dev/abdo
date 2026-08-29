@@ -16,13 +16,15 @@ def generate_launch_description():
     params_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
     custom_bt_xml = os.path.join(pkg_path, 'behavior_trees', 'simple_nav.xml')
 
-    # 🟢 تهيئة إعدادات الذراع لتمريرها إلى RViz لكي يظهر القوائم والمجسم
-    xacro_file = os.path.join(pkg_path, 'urdf', 'panda_ign.urdf.xacro')
+    # 🟢 تهيئة إعدادات الذراع لتمريرها إلى RViz لكي يظهر القوائم والمجسم (تم التعديل لقراءة الذراعين)
+    xacro_file = os.path.join(pkg_path, 'urdf', 'dual_pandas.urdf.xacro')
     moveit_config = (
         MoveItConfigsBuilder('moveit_resources_panda', package_name='moveit_resources_panda_moveit_config')
         .robot_description(file_path=xacro_file)
-        .robot_description_semantic(file_path='config/panda.srdf')
-        .trajectory_execution(file_path=os.path.join(pkg_path, 'config', 'moveit_controllers.yaml'))
+        .robot_description_semantic(file_path=os.path.join(pkg_path, 'config', 'dual_pandas.srdf'))
+        # 🟢 تمت إضافة ملف الكينماتيكا هنا لكي تظهر أسهم التحكم بالماوس
+        .robot_description_kinematics(file_path=os.path.join(pkg_path, 'config', 'dual_kinematics.yaml'))
+        .trajectory_execution(file_path=os.path.join(pkg_path, 'config', 'dual_moveit_controllers.yaml'))
         .planning_pipelines(pipelines=['ompl'])
         .to_moveit_configs()
     )
@@ -32,12 +34,12 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'gazebo.launch.py'))
     )
 
-    # إضافة أمر استدعاء ملف حقن الذراع الخاص بـ MoveIt
+    # إضافة أمر استدعاء ملف حقن الذراع الخاص بـ MoveIt (تم التعديل لتشغيل ملف إطلاق الذراعين)
     panda_arm = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'spawn_panda_only.launch.py'))
+        PythonLaunchDescriptionSource(os.path.join(pkg_path, 'launch', 'spawn_dual_pandas.launch.py'))
     )
 
-    # 2. جسر الاتصال بين ROS 2 و Ignition Gazebo (تم دمجه بالكامل مع الكاميرات)
+    # 2. جسر الاتصال بين ROS 2 و Ignition Gazebo (مدمج للكاميرتين معاً)
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -50,21 +52,34 @@ def generate_launch_description():
             '/front_right_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
             '/back_left_scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
             
-            # 📸 مسارات الكاميرا المدمجة (لونية، عمق، وسحابة نقاط) لتفادي انهيار النظام
+            # 📸 1. مسارات كاميرا ذراع التحميل (Load Arm)
             '/camera/image_raw/image@sensor_msgs/msg/Image[ignition.msgs.Image',
             '/camera/image_raw/depth_image@sensor_msgs/msg/Image[ignition.msgs.Image',
-            '/camera/image_raw/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked'
+            '/camera/image_raw/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked',
+            
+            # 📸 2. مسارات كاميرا ذراع التفريغ (Unload Arm)
+            '/unload_camera/image_raw/image@sensor_msgs/msg/Image[ignition.msgs.Image',
+            '/unload_camera/image_raw/depth_image@sensor_msgs/msg/Image[ignition.msgs.Image',
+            '/unload_camera/image_raw/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked',
+            
+            # 🟢 📸 3. مسار ليدار المنصة المتنقلة المباشر
+            '/base_camera/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan'
         ],
         remappings=[
             ('/model/warehouse_robot/odometry', '/odom'),
-            ('/front_right_scan', '/scan'),  # الليدار الرئيسي المرفوع على العمود
-            # إعادة تسمية مسارات الكاميرا لتطابق أكواد الرؤية والملاحة
+            ('/front_right_scan', '/scan'),  
+            
+            # إعادة تسمية مسارات كاميرا ذراع التحميل
             ('/camera/image_raw/image', '/camera/image_raw'),
-            ('/camera/image_raw/points', '/camera/points')
+            ('/camera/image_raw/points', '/camera/points'),
+
+            # 🟢 إعادة تسمية مسارات كاميرا ذراع التفريغ لتتوافق تماماً مع الكود
+            ('/unload_camera/image_raw/image', '/unload_camera/image_raw'),
+            ('/unload_camera/image_raw/points', '/unload_camera/points')
         ],
         parameters=[{
             'use_sim_time': True,
-            'lazy': False  # لضمان استقرار البث ومنع أي رفرفة أو انقطاع
+            'lazy': False  
         }],
         output='screen'
     )
@@ -98,7 +113,11 @@ def generate_launch_description():
             executable='amcl',
             name='amcl',
             output='screen',
-            parameters=[params_file, {'use_sim_time': True}]
+            parameters=[params_file, {
+                'use_sim_time': True,
+                'set_initial_pose': True, 
+                'initial_pose': [-17.0, -10.5, 0.0, 0.0]  # 🟢 تم إجبار نقطة الحقن هنا لحل مشكلة RViz
+            }]
         ),
         Node(
             package='nav2_planner',
@@ -167,13 +186,25 @@ def generate_launch_description():
     )
 
     # 6. تشغيل واجهة RViz2 بتأخير بسيط لضمان جاهزية العقد
+    dual_panda_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='dual_panda_state_publisher',
+        output='screen',
+        parameters=[moveit_config.robot_description, {'use_sim_time': True}],
+        remappings=[('robot_description', '/panda/robot_description')] # 👈 هنا نخصص التوبيك للذراعين
+    )
+
+    # 6. تشغيل واجهة RViz2 بتأخير بسيط لضمان جاهزية العقد
     rviz = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        # 🟢 السر هنا: قمنا بحقن إعدادات الذراع (moveit_config) داخل RViz
         parameters=[moveit_config.to_dict(), {'use_sim_time': True}],
         arguments=['-d', rviz_config_path],
+        remappings=[
+            ('/joint_states', '/panda/joint_states') # 👈 أزلنا تغيير اسم robot_description من هنا
+        ],
         output='screen'
     )
 
@@ -181,9 +212,8 @@ def generate_launch_description():
         gazebo,
         bridge,
         ekf_node,
-        
         panda_arm,  
-        
+        dual_panda_state_publisher, # 👈 أضفنا هذه العقدة هنا
         *nav_nodes,
         lifecycle_manager,
         TimerAction(period=12.0, actions=[rviz])

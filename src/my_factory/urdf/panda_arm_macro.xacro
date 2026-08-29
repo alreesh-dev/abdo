@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="mesh_pkg" value="package://moveit_resources_panda_description/meshes"/>
+
+    <xacro:macro name="panda_inertial" params="mass inertia">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${mass}"/>
+            <inertia ixx="${inertia}" ixy="0" ixz="0" iyy="${inertia}" iyz="0" izz="${inertia}"/>
+        </inertial>
+    </xacro:macro>
+
+    <!-- 🟢 قالب الذراع -->
+    <xacro:macro name="panda_arm" params="prefix parent *origin">
+        
+        <joint name="${prefix}_world_joint" type="fixed">
+            <parent link="${parent}"/>
+            <child link="${prefix}_link0"/>
+            <xacro:insert_block name="origin"/>
+        </joint>
+
+        <link name="${prefix}_link0">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link0.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link0.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="2.81" inertia="0.1"/>
+        </link>
+
+        <link name="${prefix}_link1">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link1.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link1.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="2.7" inertia="0.05"/>
+        </link>
+        <joint name="${prefix}_joint1" type="revolute">
+            <origin rpy="0 0 0" xyz="0 0 0.333"/>
+            <parent link="${prefix}_link0"/><child link="${prefix}_link1"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="87" lower="-2.9671" upper="2.9671" velocity="2.3925"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link2">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link2.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link2.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="2.73" inertia="0.05"/>
+        </link>
+        <joint name="${prefix}_joint2" type="revolute">
+            <origin rpy="-1.57079632679 0 0" xyz="0 0 0"/>
+            <parent link="${prefix}_link1"/><child link="${prefix}_link2"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="87" lower="-1.8326" upper="1.8326" velocity="2.3925"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link3">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link3.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link3.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="2.04" inertia="0.04"/>
+        </link>
+        <joint name="${prefix}_joint3" type="revolute">
+            <origin rpy="1.57079632679 0 0" xyz="0 -0.316 0"/>
+            <parent link="${prefix}_link2"/><child link="${prefix}_link3"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="87" lower="-2.9671" upper="2.9671" velocity="2.3925"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link4">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link4.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link4.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="2.08" inertia="0.04"/>
+        </link>
+        <joint name="${prefix}_joint4" type="revolute">
+            <origin rpy="1.57079632679 0 0" xyz="0.0825 0 0"/>
+            <parent link="${prefix}_link3"/><child link="${prefix}_link4"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="87" lower="-3.1416" upper="0.0873" velocity="2.3925"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link5">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link5.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link5.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="3.0" inertia="0.05"/>
+        </link>
+        <joint name="${prefix}_joint5" type="revolute">
+            <origin rpy="-1.57079632679 0 0" xyz="-0.0825 0.384 0"/>
+            <parent link="${prefix}_link4"/><child link="${prefix}_link5"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="12" lower="-2.9671" upper="2.9671" velocity="2.8710"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link6">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link6.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link6.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="1.3" inertia="0.02"/>
+        </link>
+        <joint name="${prefix}_joint6" type="revolute">
+            <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+            <parent link="${prefix}_link5"/><child link="${prefix}_link6"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="12" lower="-0.0873" upper="3.8223" velocity="2.8710"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link7">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/link7.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/link7.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="0.4" inertia="0.01"/>
+        </link>
+        <joint name="${prefix}_joint7" type="revolute">
+            <origin rpy="1.57079632679 0 0" xyz="0.088 0 0"/>
+            <parent link="${prefix}_link6"/><child link="${prefix}_link7"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="12" lower="-2.9671" upper="2.9671" velocity="2.8710"/>
+            <dynamics damping="10.0" friction="1.0"/>
+        </joint>
+
+        <link name="${prefix}_link8">
+            <xacro:panda_inertial mass="0.05" inertia="0.001"/>
+        </link>
+        <joint name="${prefix}_joint8" type="fixed">
+            <origin rpy="0 0 0" xyz="0 0 0.107"/>
+            <parent link="${prefix}_link7"/><child link="${prefix}_link8"/>
+        </joint>
+
+        <joint name="${prefix}_hand_joint" type="fixed">
+            <parent link="${prefix}_link8"/><child link="${prefix}_hand"/>
+            <origin rpy="0 0 -0.785398163397" xyz="0 0 0"/>
+        </joint>
+        <link name="${prefix}_hand">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/hand.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/hand.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="0.73" inertia="0.02"/>
+        </link>
+
+        <link name="${prefix}_leftfinger">
+            <visual><geometry><mesh filename="${mesh_pkg}/visual/finger.dae"/></geometry></visual>
+            <collision><geometry><mesh filename="${mesh_pkg}/collision/finger.stl"/></geometry></collision>
+            <xacro:panda_inertial mass="0.015" inertia="0.0001"/>
+        </link>
+        <link name="${prefix}_rightfinger">
+            <visual>
+                <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
+                <geometry><mesh filename="${mesh_pkg}/visual/finger.dae"/></geometry>
+            </visual>
+            <collision>
+                <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
+                <geometry><mesh filename="${mesh_pkg}/collision/finger.stl"/></geometry>
+            </collision>
+            <xacro:panda_inertial mass="0.015" inertia="0.0001"/>
+        </link>
+        <joint name="${prefix}_finger_joint1" type="prismatic">
+            <parent link="${prefix}_hand"/><child link="${prefix}_leftfinger"/>
+            <origin rpy="0 0 0" xyz="0 0 0.0584"/>
+            <axis xyz="0 1 0"/>
+            <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
+            <dynamics damping="10.0" friction="0.0"/>
+        </joint>
+        <joint name="${prefix}_finger_joint2" type="prismatic">
+            <parent link="${prefix}_hand"/><child link="${prefix}_rightfinger"/>
+            <origin rpy="0 0 0" xyz="0 0 0.0584"/>
+            <axis xyz="0 -1 0"/>
+            <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
+            <mimic joint="${prefix}_finger_joint1"/>
+            <dynamics damping="10.0" friction="0.0"/>
+        </joint>
+
+        <!-- 🟢 إعدادات التحكم الخاصة بهذا الذراع فقط -->
+        <ros2_control name="${prefix}_PandaGazeboSystem" type="system">
+            <hardware>
+                <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+            </hardware>
+            <xacro:macro name="arm_joint_ctrl" params="jname init">
+                <joint name="${jname}">
+                    <command_interface name="position"/>
+                    <state_interface name="position"><param name="initial_value">${init}</param></state_interface>
+                    <state_interface name="velocity"/>
+                    <state_interface name="effort"/>
+                </joint>
+            </xacro:macro>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint1" init="0.0"/>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint2" init="-0.785"/>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint3" init="0.0"/>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint4" init="-2.356"/>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint5" init="0.0"/>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint6" init="1.571"/>
+            <xacro:arm_joint_ctrl jname="${prefix}_joint7" init="0.785"/>
+            
+            <joint name="${prefix}_finger_joint1">
+                <command_interface name="position"/>
+                <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
+            <joint name="${prefix}_finger_joint2">
+                <param name="mimic">${prefix}_finger_joint1</param>
+                <param name="multiplier">1</param>
+                <command_interface name="position"/>
+                <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
+        </ros2_control>
+    </xacro:macro>
+</robot>

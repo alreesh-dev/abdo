@@ -14,13 +14,18 @@ install(DIRECTORY launch config maps models urdf worlds behavior_trees
   DESTINATION share/${PROJECT_NAME}
 )
 
-# تثبيت عقدة البايثون وجعلها قابلة للتنفيذ
+# تثبيت عقد البايثون الموجودة في مجلد src
 install(PROGRAMS
   src/laser_merger_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
+# 💡 تم التعديل هنا: استخدام scripts بدلاً من src
 install(PROGRAMS
   scripts/my_task.py
+  scripts/cube_detector.py
+  scripts/cube_picker.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
 ament_package()

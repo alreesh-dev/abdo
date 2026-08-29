@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dual_panda">
+
+    <!-- استدعاء قالب الذراع -->
+    <xacro:include filename="panda_arm_macro.xacro"/>
+    <!-- استدعاء ملف قالب الكاميرا -->
+    <xacro:include filename="arm_camera.xacro"/>
+
+    <!-- الإطار المرجعي للعالم -->
+    <link name="world"/>
+
+    <!-- 🏗️ 1. حقن ذراع التحميل (Load Arm) -->
+    <xacro:panda_arm prefix="load" parent="world">
+        <origin xyz="5.36 -16.9 0.11" rpy="0 0 0"/>
+    </xacro:panda_arm>
+
+    <!-- 📷 2. كاميرا ذراع التحميل (مع تمرير الـ topic الخاص بها) -->
+    <xacro:arm_camera prefix="load" parent="world" topic="camera/image_raw">
+        <origin xyz="6.0 -16.8 1.06" rpy="0 1.5707 0"/>
+    </xacro:arm_camera>
+
+    <!-- 🏗️ 3. حقن ذراع التفريغ (Unload Arm) -->
+    <xacro:panda_arm prefix="unload" parent="world">
+        <origin xyz="-21.5 -17.0 0.11" rpy="0 0 0"/> 
+    </xacro:panda_arm>
+
+    <!-- 📷 4. كاميرا ذراع التفريغ (مع تمرير الـ topic الخاص بها) -->
+    <xacro:arm_camera prefix="unload" parent="world" topic="unload_camera/image_raw">
+        <origin xyz="-21.7 -17.3 1.06" rpy="0 1.5707 0"/>
+    </xacro:arm_camera>
+
+    <!-- 🔌 إضافة بلجن التحكم الخاص بـ Gazebo -->
+    <gazebo>
+        <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+            <parameters>$(find my_factory)/config/dual_panda_controllers.yaml</parameters>
+            <robot_param_node>/panda/robot_state_publisher</robot_param_node>
+            <controller_manager_node_name>/controller_manager</controller_manager_node_name>
+            <ros>
+                <remapping>/joint_states:=/panda/joint_states</remapping>
+            </ros>
+        </plugin>
+    </gazebo>
+
+</robot>
